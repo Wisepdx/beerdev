@@ -56,6 +56,7 @@
           $bvName = "";
           $bvBatchSize = 0;
           $bvBatchId = 0;
+          $bvBatchDate = 66;
 
           if ($batchResult->num_rows > 0) {
               // output data of each row
@@ -64,6 +65,7 @@
                   $bvName = $row["batchName"];
                   $bvBatchSize = $row["batchSize"];
                   $bvBatchId = $row["batchId"];
+                  $bvBatchDate = strtotime($row["batchDate"]);
 
                   echo
                   "<div class='page-header'>".
@@ -86,21 +88,39 @@
             <!-- Style Tab -->
             <div role="tabpanel" class="tab-pane" id="style">
               <p>This page contains data relating to the chosen batch. If this page is the current batch it will be generated with available data.</p>
-              <h3>Style</h3>
-              <table class='table table-condensed table-hover table-striped'>
-                <thead>
-                  <th>Style Name</th>
-                  <th>Orig Gravity</th>
-                  <th>Final Gravity</th>
-                  <th>ABV</th>
-                </thead>
-                <tr>
-                  <td>X</td>
-                  <td>X</td>
-                  <td>X</td>
-                  <td>X</td>
-                </tr>
-              </table>
+
+              <?php
+              //ferm data
+              $styleSql = "SELECT * FROM style WHERE batchId = $BeerId";
+              $styleResult = $conn->query($styleSql);
+              $mashTime = 0;
+              $boilTime = 0;
+
+              if ($styleResult->num_rows > 0) {
+
+                echo "<h3>Style</h3>
+                <table class='table table-condensed table-hover table-striped'>
+                  <thead>
+                    <th>Style Name</th>
+                    <th>Orig Gravity</th>
+                    <th>Final Gravity</th>
+                    <th>ABV</th>
+                  </thead>";
+
+                  // output data of each row
+                  while($row = $styleResult->fetch_assoc()) {
+                    $mashTime = $row["mashTime"];
+                    $boilTime = $row["boilTime"];
+                    echo "<tr>".
+                      "<td>".$row["name"]."</td>".
+                      "<td>".$row["oGravity"]."</td>".
+                      "<td>".$row["fGravity"]."</td>".
+                      "<td>".$row["abv"]." %</td>".
+                      "</tr>";
+                  }
+                  echo "</table>";
+              }
+              ?>
               <h3>Style Details</h3>
               <table class='table table-condensed table-hover table-striped'>
                 <thead>
@@ -114,60 +134,126 @@
                 <tr>
                   <td><?php echo $bvName; ?></td>
                   <td><?php echo $bvBatchId; ?></td>
-                  <td>X</td>
+                  <td>XXX<?php $bvBatchDate; ?></td>
                   <td><?php if ($bvBatchSize > 0){echo $bvBatchSize." Gallons";}else{} ?></td>
-                  <td>X</td>
-                  <td>X</td>
+                  <td><?php if ($mashTime > 0){echo $mashTime." min";}else{} ?></td>
+                  <td><?php if ($boilTime > 0){echo $boilTime." min";}else{} ?></td>
                 </tr>
               </table>
             </div>
             <!--  Ingredients Tab -->
+
+
             <div role="tabpanel" class="tab-pane" id="ingredients">
-              <h3>Fermentables</h3>
-              <table class='table table-condensed table-hover table-striped'>
-                <thead>
-                  <th>Name</th>
-                  <th>Amount</th>
-                  <th>%</th>
-                </thead>
-                <tr>
-                  <td>X</td>
-                  <td>X</td>
-                  <td>X</td>
-                </tr>
-              </table>
-              <h3>Hops</h3>
-              <table class='table table-condensed table-hover table-striped'>
-                <thead>
-                  <th>Name</th>
-                  <th>Amount</th>
-                  <th>Time</th>
-                  <th>Use</th>
-                  <th>Form</th>
-                  <th>Alpha %</th>
-                </thead>
-                <tr>
-                  <td>X</td>
-                  <td>X</td>
-                  <td>X</td>
-                  <td>X</td>
-                  <td>X</td>
-                  <td>X</td>
-                </tr>
-              </table>
-              <h3>Yeast</h3>
-              <table class='table table-condensed table-hover table-striped'>
-                <thead>
-                  <th>Name</th>
-                  <th>Attenuation</th>
-                  <th>Temperature Range</th>
-                </thead>
-                <tr>
-                  <td>X</td>
-                  <td>X</td>
-                  <td>X</td>
-                </tr>
-              </table>
+              <?php
+              //ferm data
+              $fermSql = "SELECT * FROM fermentables WHERE batchId = $BeerId";
+              $fermResult = $conn->query($fermSql);
+              if ($fermResult->num_rows > 0) {
+
+                echo "<h3>Fermentables</h3>
+                <table class='table table-condensed table-hover table-striped'>
+                  <thead>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th>%</th>
+                  </thead>";
+
+                  // output data of each row
+                  while($row = $fermResult->fetch_assoc()) {
+                    $lbs = $row["pounds"];
+                    $oz = $row["ounces"];
+                    $pct = $row["percent"];
+                    echo "<tr>".
+                      "<td>".$row["name"]."</td>";
+                    if (($lbs != null) || ($oz != null)){
+                      echo "<td>".$lbs." lbs. ".$oz." oz.</td>";
+                    } else{
+                      echo "<td></td>";
+                    }
+                    if ($pct == 0){
+                      echo "<td></td>";
+                    }  else{
+                      echo "<td>".$row["percent"]." </td>";
+                    }
+                    echo "</tr>";
+
+                  }
+                  echo "</table>";
+              }
+              ?>
+              <?php
+              //hop data
+              $hopSql = "SELECT * FROM hops WHERE batchId = $BeerId ORDER BY minutes DESC";
+              $hopResult = $conn->query($hopSql);
+              if ($hopResult->num_rows > 0) {
+
+                echo "<h3>Hops</h3>
+                <table class='table table-condensed table-hover table-striped'>
+                  <thead>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th>Time</th>
+                    <th>Use</th>
+                    <th>Form</th>
+                    <th>Alpha %</th>
+                  </thead>";
+
+                  // output data of each row
+                  while($row = $hopResult->fetch_assoc()) {
+                    $oz = $row["ounces"];
+                    $min = $row["minutes"];
+                    $aa = $row["alphaAcid"];
+                    echo "<tr>".
+                      "<td>".$row["name"]."</td>";
+                    if ($oz != null){
+                      echo "<td>".$oz." oz.</td>";
+                    } else{
+                      echo "<td></td>";
+                    }
+                    if ($min != null){
+                      echo "<td>".$min." min.</td>";
+                    } else{
+                      echo "<td></td>";
+                    }
+                    echo "<td>".$row["usedFor"]."</td>";
+                    echo "<td>".$row["form"]."</td>";
+
+                    if ($aa == 0){
+                      echo "<td></td>";
+                    }  else{
+                      echo "<td>".$aa." %</td>";
+                    }
+                    echo "</tr>";
+
+                  }
+                  echo "</table>";
+              }
+              ?>
+              <?php
+              //ferm data
+              $yeastSql = "SELECT * FROM yeast WHERE batchId = $BeerId";
+              $yeastResult = $conn->query($yeastSql);
+              if ($yeastResult->num_rows > 0) {
+
+                echo "<h3>Yeast</h3>
+                <table class='table table-condensed table-hover table-striped'>
+                  <thead>
+                    <th>Name</th>
+                    <th>Temp Range</th>
+                  </thead>";
+
+                  // output data of each row
+                  while($row = $yeastResult->fetch_assoc()) {
+                    echo "<tr>".
+                      "<td>".$row["name"]."</td>";
+                    echo "<td>".$row["tempLow"]." - ".$row["tempHigh"]."</td>";
+                    echo "</tr>";
+
+                  }
+                  echo "</table>";
+              }
+              ?>
             </div>
             <!-- Charts Tab -->
             <div role="tabpanel" class="tab-pane active" id="charts">
@@ -230,8 +316,8 @@
                                     $td = $row["tempDiff"];
                                     //set targetTemp to var
                                     $tt = $row["targetTemp"];
-                                    $tth = $tt-$td;
-                                    $ttl = $tt+$td;
+                                    $tth = $tt+$td;
+                                    $ttl = $tt-$td;
                                     //set currentTemp to var
                                     $ct = $row["currentTemp"];
                                     //set ambientTemp to var
@@ -263,13 +349,14 @@
                                     }
 
                                     // Increment Over/Under/In Target Range Counts
-                                    if ($ct > $tth){
+                                    if (($ct <= $tth) && ($ct >= $ttl)){
+                                      $numInTarget++;
+                                    } else if ($ct > $tth){
                                       $numOverTarget++;
                                     } else if ($ct < $ttl){
                                       $numUnderTarget++;
-                                    } else{
-                                      $numInTarget++;
                                     }
+
                                     // Increment Total row count
                                     $numTotal++;
 
@@ -511,14 +598,17 @@
           series: [{
               name: 'Under',
               data: [<?php echo round($numUnderTarget/$numTotal*100); ?>]
+              //data: [<?php echo $numUnderTarget; ?>]
 
           }, {
               name: 'In Range',
               data: [<?php echo round($numInTarget/$numTotal*100); ?>]
+              //data: [<?php echo $numInTarget; ?>]
 
           },{
               name: 'Over',
               data: [<?php echo round($numOverTarget/$numTotal*100); ?>]
+              //data: [<?php echo $numOverTarget; ?>]
 
           }]
         });
