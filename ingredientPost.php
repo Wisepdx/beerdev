@@ -88,6 +88,9 @@
                   </div>
 
                   <!-- Body -->
+                  
+
+
                   <div class="row">
                     <div class='col-md-4'>
                       <label class='sr-only' for="iName1">Ingredient Name 1</label>

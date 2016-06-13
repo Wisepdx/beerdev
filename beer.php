@@ -85,12 +85,14 @@
           </ul>
           <!-- Tab panes -->
           <div class="tab-content">
+
             <!-- Style Tab -->
+
             <div role="tabpanel" class="tab-pane" id="style">
               <p>This page contains data relating to the chosen batch. If this page is the current batch it will be generated with available data.</p>
 
               <?php
-              //ferm data
+              //style data
               $styleSql = "SELECT * FROM style WHERE batchId = $BeerId";
               $styleResult = $conn->query($styleSql);
               $mashTime = 0;
@@ -141,8 +143,8 @@
                 </tr>
               </table>
             </div>
-            <!--  Ingredients Tab -->
 
+            <!--  Ingredients Tab -->
 
             <div role="tabpanel" class="tab-pane" id="ingredients">
               <?php
@@ -231,7 +233,7 @@
               }
               ?>
               <?php
-              //ferm data
+              //yeast data
               $yeastSql = "SELECT * FROM yeast WHERE batchId = $BeerId";
               $yeastResult = $conn->query($yeastSql);
               if ($yeastResult->num_rows > 0) {
@@ -255,7 +257,9 @@
               }
               ?>
             </div>
+
             <!-- Charts Tab -->
+
             <div role="tabpanel" class="tab-pane active" id="charts">
               <div class='col-md-12'>
                 <h3>Temp History Chart</h3>
