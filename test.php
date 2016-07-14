@@ -33,6 +33,20 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script type="text/javascript">
+
+      function addRow(table, row){
+        //return "adding row to " + table;
+        var cloneRow = $('#' + table + 'tbody tr').clone();
+        alert(row);
+        return $('#' + table + ' tbody tr').last().after('<tr><td>BLURG<?php echo $fermRows; ?></td></tr>').html();
+      }
+      function toggleRow(table,row){
+        $('#iEdit' + row).toggle();
+        $('#iAction' + row).toggle();
+      }
+    </script>
+
   </head>
   <body>
     <?php
@@ -98,67 +112,59 @@
                 // output data of each row
                 while($row = $fermResult->fetch_assoc()) {
                   //push array of data into fermArray
-                  array_push($fermArray,array($row["name"],$row["pounds"],$row["ounces"],$row["percent"]));
+                  array_push($fermArray,array($row["fermId"],$row["name"],$row["pounds"],$row["ounces"],$row["percent"]));
                 }
             }
-            if(count($fermArray) > 10){
-              $fermRowMax = count($fermArray);
-            } else $fermRowMax = 10;
+
             //build input table
             echo "<h2>Fermentables</h2>".
-            "<table class='table table-hover table-striped'>".
-            "<th class='hidden-sm hidden-xs'><div class='col-md-4'>Name</div><div class='col-md-3'>Pounds</div><div class='col-md-3'>Ounces</div><div class='col-md-2'>Percentage</div></th>".
+            "<table id='fermentTable' class='table table-hover table-striped'>".
+            "<th class='hidden-sm hidden-xs'><div class='col-md-4'>Name</div><div class='col-md-2'>Pounds</div><div class='col-md-2'>Ounces</div><div class='col-md-2'>Percentage</div><div class='col-md-2'></div></th>".
               "<tbody>";
                 // populate table
                 $fermArrayCount = count($fermArray);
-                while($fermRows < $fermRowMax){
+                while($fermRows < $fermArrayCount){
                   if($fermRows < $fermArrayCount){
                     echo "<tr><td>".
                     //populate from array
+                      "<div class='hidden'>".
+                        "<input id='iId$fermRows' class='' type='text' name='iId$fermRows' class='form-control' value='".$fermArray[$fermRows][0]."' placeholder='fermId'/>".
+                      "</div>".
                       "<div class='col-md-4'>".
                         "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iName$fermRows'>Name</label>".
-                        "<input id='iName$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iName$fermRows' class='form-control' value='".$fermArray[$fermRows][0]."' placeholder='Name'/>".
+                        "<input id='iName$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iName$fermRows' class='form-control' value='".$fermArray[$fermRows][1]."' placeholder='Name'/>".
                       "</div>".
-                      "<div class='col-md-3'>".
+                      "<div class='col-md-2'>".
                         "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iPounds$fermRows'>Pounds</label>".
-                        "<input id='iPounds$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iPounds$fermRows' class='form-control' value='".$fermArray[$fermRows][1]."'placeholder='Pounds'/>".
+                        "<input id='iPounds$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iPounds$fermRows' class='form-control' value='".$fermArray[$fermRows][2]."'placeholder='Pounds'/>".
                       "</div>".
-                      "<div class='col-md-3'>".
+                      "<div class='col-md-2'>".
                         "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iOunces$fermRows'>Ounces</label>".
-                        "<input id='iOunces$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iOunces$fermRows' class='form-control' value='".$fermArray[$fermRows][2]."'placeholder='Ounces'/>".
+                        "<input id='iOunces$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iOunces$fermRows' class='form-control' value='".$fermArray[$fermRows][3]."'placeholder='Ounces'/>".
                       "</div>".
                       "<div class='col-md-2'>".
                         "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iPercent$fermRows'>Percent</label>".
-                        "<input id='iPercent$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iPercent$fermRows' class='form-control' value='".$fermArray[$fermRows][3]."'placeholder='Percentage'/>".
-                      "</div>".
-                    "</td></tr>";
-                    //echo $fermArray[$fermRows][0]." : ".$fermArray[$fermRows][1]." : ".$fermArray[$fermRows][2]." : ".$fermArray[$fermRows][3]."<br/>";
-                    $fermRows++;
-                  } else{
-                    //populate with blank row
-                    echo "<tr><td>".
-                      "<div class='col-md-4'>".
-                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iName$fermRows'>Name</label>".
-                        "<input id='iName$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iName$fermRows' class='form-control' value='' placeholder='Name'/>".
-                      "</div>".
-                      "<div class='col-md-3'>".
-                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iPounds$fermRows'>Pounds</label>".
-                        "<input id='iPounds$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iPounds$fermRows' class='form-control' value=''placeholder='Pounds'/>".
-                      "</div>".
-                      "<div class='col-md-3'>".
-                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iOunces$fermRows'>Ounces</label>".
-                        "<input id='iOunces$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iOunces$fermRows' class='form-control' value=''placeholder='Ounces'/>".
+                        "<input id='iPercent$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iPercent$fermRows' class='form-control' value='".$fermArray[$fermRows][4]."'placeholder='Percentage'/>".
                       "</div>".
                       "<div class='col-md-2'>".
-                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iPercent$fermRows'>Percent</label>".
-                        "<input id='iPercent$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iPercent$fermRows' class='form-control' value=''placeholder='Percentage'/>".
+                        // "<span class='col-xs-10 col-lg-4'></span>".
+                        // "<span class='col-xs-2 col-lg-4'>".
+                          "<div id='iEdit$fermRows' class='btn-group' role='group' aria-label='...'>".
+                            "<button type='button' class='btn btn-xs btn-info' onclick='toggleRow(\"fermentTable\",$fermRows)'>Edit</button>".
+                          "</div>".
+                          "<div id='iAction$fermRows' class='btn-group' style='display:none' role='group' aria-label='...'>".
+                            "<button type='button' class='btn btn-xs btn-info' onclick='toggleRow(\"fermentTable\",$fermRows)'>Save</button>".
+                            "<button type='button' class='btn btn-xs btn-info' onclick='toggleRow(\"fermentTable\",$fermRows)'>Delete</button>".
+                            "<button type='button' class='btn btn-xs btn-info' onclick='toggleRow(\"fermentTable\",$fermRows)'>Cancel</button>".
+                          "</div>".
+                        // "</span>".
                       "</div>".
                     "</td></tr>";
-                    //echo "blank row<br/>";
-                    $fermRows++;
                   }
+                  $fermRows++;
                 }
             echo "</tbody></table>";
+            echo "<a href='#' onclick='addRow(\"fermentTable\");'>Add Row</a>"
             ?>
 
             <!-- HOPs -->
@@ -342,7 +348,10 @@
     <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
     <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
     <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script text="text/javascript">
+      //$('#iAction3').hide();
 
+    </script>
 
   </body>
 </html>
