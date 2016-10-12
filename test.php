@@ -35,15 +35,87 @@
 
     <script type="text/javascript">
 
-      function addRow(table, row){
-        //return "adding row to " + table;
-        var cloneRow = $('#' + table + 'tbody tr').clone();
-        alert(row);
-        return $('#' + table + ' tbody tr').last().after('<tr><td>BLURG<?php echo $fermRows; ?></td></tr>').html();
+      function addRow(table){
+        // return "adding row to " + table;
+        var cloneRow = $('#' + table + ' tbody tr').first().html();
+        // alert(cloneRow);
+        $('#' + table + ' tbody tr').last().after('<tr>' + cloneRow + '</tr>');
+        $('#' + table + ' tbody tr').last().find('input').val("");
       }
-      function toggleRow(table,row){
-        $('#iEdit' + row).toggle();
-        $('#iAction' + row).toggle();
+      function toggleRow(table,thisbutton){
+        $(thisbutton).parents('tr').find('#iEdit').toggle();
+        //alert($(thisbutton).parents('tr').find('#iEdit').html());
+        $(thisbutton).parents('tr').find('#iAction').toggle();
+      }
+      function saveRow(table,thisbutton){
+        var row = $(thisbutton).parents('tr');
+        if (table == "fermentTable"){
+          // make variable for each part of save
+          var id = $(row).find('input[name=iId]').val();
+          var name = $(row).find('input[name=iName]').val();
+          var pounds = $(row).find('input[name=iPounds]').val();
+          var ounces = $(row).find('input[name=iOunces]').val();
+          var percentage = $(row).find('input[name=iPercent]').val();
+          //alert(percentage);
+          var batchId = <?php echo $_GET["id"]; ?>;
+          if(id != null){
+            // Post to ajax.php as an update
+            $.ajax({
+              url: 'ajax.php',
+              method: 'POST',
+              data: {batchId: batchId, table: 'fermentables', action: 'update', id: id, name: name, pounds: pounds, ounces: ounces, percentage: percentage}
+            }).done(function(data){
+              toggleRow(table,thisbutton);
+              console.log(data);
+            }).error(function(jqXHR, textStatus, errorThrown){
+              console.log(jqXHR);
+              console.log(textStatus);
+              console.log(errorThrown);
+            });
+          } else{
+            // Post to ajax.php as an addition
+            $.ajax({
+              url: 'ajax.php',
+              method: 'POST',
+              data: {batchId: batchId, table: 'fermentables', action: 'add', id: id, name: name, pounds: pounds, ounces: ounces, percentage: percentage}
+            }).done(function(data){
+              toggleRow(table,thisbutton);
+              console.log(data);
+            }).error(function(jqXHR, textStatus, errorThrown){
+              console.log(jqXHR);
+              console.log(textStatus);
+              console.log(errorThrown);
+            });
+          }
+        }
+      }
+
+      function deleteRow(table,thisbutton){
+        var row = $(thisbutton).parents('tr');
+        if (table == "fermentTable"){
+          // make variable for each part of save
+          var id = $(row).find('input[name=iId]').val();
+          var name = $(row).find('input[name=iName]').val();
+          var pounds = $(row).find('input[name=iPounds]').val();
+          var ounces = $(row).find('input[name=iOunces]').val();
+          var percentage = $(row).find('input[name=iPercent]').val();
+          //alert(percentage);
+          var batchId = <?php echo $_GET["id"]; ?>;
+
+          // Post to ajax.php
+          $.ajax({
+            url: 'ajax.php',
+            method: 'POST',
+            data: {batchId: batchId, table: 'fermentables', action: 'delete', id: id, name: name, pounds: pounds, ounces: ounces, percentage: percentage}
+          }).done(function(data){
+            toggleRow(table,thisbutton);
+            console.log(data);
+          }).error(function(jqXHR, textStatus, errorThrown){
+            console.log(jqXHR);
+            console.log(textStatus);
+            console.log(errorThrown);
+          });
+        }
       }
     </script>
 
@@ -119,7 +191,7 @@
             //build input table
             echo "<h2>Fermentables</h2>".
             "<table id='fermentTable' class='table table-hover table-striped'>".
-            "<th class='hidden-sm hidden-xs'><div class='col-md-4'>Name</div><div class='col-md-2'>Pounds</div><div class='col-md-2'>Ounces</div><div class='col-md-2'>Percentage</div><div class='col-md-2'></div></th>".
+            "<thead><th class='hidden-sm hidden-xs'><div class='col-md-4'>Name</div><div class='col-md-2'>Pounds</div><div class='col-md-2'>Ounces</div><div class='col-md-2'>Percentage</div><div class='col-md-2'></div></th></thead>".
               "<tbody>";
                 // populate table
                 $fermArrayCount = count($fermArray);
@@ -127,35 +199,36 @@
                   if($fermRows < $fermArrayCount){
                     echo "<tr><td>".
                     //populate from array
+
                       "<div class='hidden'>".
-                        "<input id='iId$fermRows' class='' type='text' name='iId$fermRows' class='form-control' value='".$fermArray[$fermRows][0]."' placeholder='fermId'/>".
+                        "<input class='' type='text' name='iId' class='form-control' value='".$fermArray[$fermRows][0]."' placeholder='fermId'/>".
                       "</div>".
                       "<div class='col-md-4'>".
-                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iName$fermRows'>Name</label>".
-                        "<input id='iName$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iName$fermRows' class='form-control' value='".$fermArray[$fermRows][1]."' placeholder='Name'/>".
+                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iName'>Name</label>".
+                        "<input class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iName' class='form-control' value='".$fermArray[$fermRows][1]."' placeholder='Name'/>".
                       "</div>".
                       "<div class='col-md-2'>".
-                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iPounds$fermRows'>Pounds</label>".
-                        "<input id='iPounds$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iPounds$fermRows' class='form-control' value='".$fermArray[$fermRows][2]."'placeholder='Pounds'/>".
+                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iPounds'>Pounds</label>".
+                        "<input class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iPounds' class='form-control' value='".$fermArray[$fermRows][2]."'placeholder='Pounds'/>".
                       "</div>".
                       "<div class='col-md-2'>".
-                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iOunces$fermRows'>Ounces</label>".
-                        "<input id='iOunces$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iOunces$fermRows' class='form-control' value='".$fermArray[$fermRows][3]."'placeholder='Ounces'/>".
+                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iOunces'>Ounces</label>".
+                        "<input class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iOunces' class='form-control' value='".$fermArray[$fermRows][3]."'placeholder='Ounces'/>".
                       "</div>".
                       "<div class='col-md-2'>".
-                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iPercent$fermRows'>Percent</label>".
-                        "<input id='iPercent$fermRows' class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iPercent$fermRows' class='form-control' value='".$fermArray[$fermRows][4]."'placeholder='Percentage'/>".
+                        "<label class='hidden-lg hidden-md col-sm-4 col-xs-6' for='iPercent'>Percent</label>".
+                        "<input class='col-lg-12 col-md-12 col-sm-8 col-xs-6' type='text' name='iPercent' class='form-control' value='".$fermArray[$fermRows][4]."'placeholder='Percentage'/>".
                       "</div>".
                       "<div class='col-md-2'>".
                         // "<span class='col-xs-10 col-lg-4'></span>".
                         // "<span class='col-xs-2 col-lg-4'>".
-                          "<div id='iEdit$fermRows' class='btn-group' role='group' aria-label='...'>".
-                            "<button type='button' class='btn btn-xs btn-info' onclick='toggleRow(\"fermentTable\",$fermRows)'>Edit</button>".
+                          "<div id='iEdit' class='btn-group' role='group' aria-label='...'>".
+                            "<button type='button' class='btn btn-xs btn-info' onclick='toggleRow(\"fermentTable\",this)'>Edit</button>".
                           "</div>".
-                          "<div id='iAction$fermRows' class='btn-group' style='display:none' role='group' aria-label='...'>".
-                            "<button type='button' class='btn btn-xs btn-info' onclick='toggleRow(\"fermentTable\",$fermRows)'>Save</button>".
-                            "<button type='button' class='btn btn-xs btn-info' onclick='toggleRow(\"fermentTable\",$fermRows)'>Delete</button>".
-                            "<button type='button' class='btn btn-xs btn-info' onclick='toggleRow(\"fermentTable\",$fermRows)'>Cancel</button>".
+                          "<div id='iAction' class='btn-group' style='display:none' role='group' aria-label='...'>".
+                            "<button type='button' class='btn btn-xs btn-info' onclick='saveRow(\"fermentTable\",this)'>Save</button>".
+                            "<button type='button' class='btn btn-xs btn-info' onclick='toggleRow(\"fermentTable\",this)'>Delete</button>".
+                            "<button type='button' class='btn btn-xs btn-info' onclick='toggleRow(\"fermentTable\",this)'>Cancel</button>".
                           "</div>".
                         // "</span>".
                       "</div>".
